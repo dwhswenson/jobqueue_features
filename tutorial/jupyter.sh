@@ -26,7 +26,6 @@ function start_slurm() {
     echo
 }
 
-
 function start_tutorial() {
     start_slurm
     launch_tutorial_slurm
@@ -34,9 +33,12 @@ function start_tutorial() {
 
 function launch_tutorial_slurm() {
     # Clone the tutorials, import the workspace and start the JupyterLab
-    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data; git clone https://github.com/E-CAM/jobqueue_features_workshop_materials.git"
+    USER="E-CAM"
+    REPO="jobqueue_features_workshop_materials"
+    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data; git clone https://github.com/${USER}/${REPO}.git"
+    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data/${REPO}; git pull"
     docker exec -u slurmuser slurmctld /bin/bash -c "jupyter lab workspace import /data/jobqueue_features_workshop_materials/workspace.json"
-    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data/jobqueue_features_workshop_materials; jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.notebook_dir='/data/jobqueue_features_workshop_materials'&"
+    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data/${REPO}; jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.notebook_dir='/data/${REPO}'&"
     echo -e "\tOpen your browser at http://localhost:8888/lab/workspaces/lab"
     echo
 }
@@ -44,8 +46,14 @@ function launch_tutorial_slurm() {
 function start_jobqueue_tutorial() {
     start_slurm
     # Clone jobqueue tutorial, import workspace
-    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data; git clone https://github.com/ExaESM-WP4/workshop-Dask-Jobqueue-cecam-2021-02.git"
-    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data/workshop-Dask-Jobqueue-cecam-2021-02; jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.notebook_dir='/data/workshop-Dask-Jobqueue-cecam-2021-02'&"
+    USER="ExaESM-WP4"  # TODO: fork this; create version that works out of box
+    REPO="workshop-Dask-Jobqueue-cecam-2021-02"
+    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data; git clone https://github.com/${USER}/${REPO}.git"
+    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data/${REPO}; git pull"
+    # ensure everything is installed
+    docker exec -u slurmuser clurmctld /bin/bash -c "cd /data/${REPO}; conda env update -y --file environment.yml"
+    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data/workshop-Dask-Jobqueue-cecam-2021-02/notebooks; jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.notebook_dir='/data/workshop-Dask-Jobqueue-cecam-2021-02/notebooks'&"
+    docker exec -u slurmuser slurmctld /bin/bash -c "cd /data/${REPO}/notebooks; jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.notebook_dir='/data/${REPO}/notebooks'&"
     echo -e "\tOpen your browser at http://localhost:8888/lab/workspaces/lab"
     echo
 }
