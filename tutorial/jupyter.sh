@@ -7,6 +7,9 @@ function start_slurm() {
       ./start-slurm.sh
     cd -
 
+    # Retrieve the host port
+    hostport=$(docker port slurmctld 8888 | cut -d ":" -f2)
+    daskport=$(docker port slurmctld 8787 | cut -d ":" -f2)
     # Install JupyterLab and the Dask extension
     docker exec slurmctld /bin/bash -c "conda install -c conda-forge jupyterlab distributed nodejs dask-labextension"
     # Add a slurmuser so we don't run as root
@@ -55,6 +58,7 @@ function start_jobqueue_tutorial() {
     docker exec -u slurmuser slurmctld /bin/bash -c "cd /data/workshop-Dask-Jobqueue-cecam-2021-02/notebooks; jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.notebook_dir='/data/workshop-Dask-Jobqueue-cecam-2021-02/notebooks'&"
     docker exec -u slurmuser slurmctld /bin/bash -c "cd /data/${REPO}/notebooks; jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.notebook_dir='/data/${REPO}/notebooks'&"
     echo -e "\tOpen your browser at http://localhost:8888/lab/workspaces/lab"
+    echo -e "\tDefault Dask dashboard will be available at http://localhost:$daskport"
     echo
 }
 
